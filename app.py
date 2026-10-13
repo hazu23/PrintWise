@@ -1,5 +1,5 @@
 # this creates your flask application and registers the admin, staff, user, and authentication routes
-from flask import Flask, redirect, url_for
+from flask import Flask, render_template
 from config import Config
 from users import admin_bp, staff_bp, user_bp
 
@@ -16,20 +16,7 @@ def create_app():
     # home page
     @app.route("/")
     def index():
-        return "Welcome to PrintWise!"
-
-    # temporary dashboards
-    @app.route("/admin/dashboard")
-    def admin_dashboard():
-        return "Admin Dashboard"
-
-    @app.route("/staff/dashboard")
-    def staff_dashboard():
-        return "Staff Dashboard"
-
-    @app.route("/user/dashboard")
-    def user_dashboard():
-        return "User Dashboard"
+        return render_template("index.html")
 
     return app
 

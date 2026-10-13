@@ -1,0 +1,26 @@
+body {
+    background: #f7f8fa;
+    color: #202936;
+}
+
+.dashboard-card {
+    display: block;
+    height: 100%;
+    padding: 1.25rem;
+    border: 1px solid #e3e8ef;
+    border-radius: 0.75rem;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.dashboard-card:hover {
+    border-color: #8aaef8;
+    color: inherit;
+    transform: translateY(-2px);
+}
+
+.dashboard-card p {
+    color: #667085;
+}
