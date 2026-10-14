@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Log in | PrintWise{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">{% endblock %}
+
+{% block content %}
+<section class="auth-layout login-layout">
+    <div class="auth-intro">
+        <span class="auth-kicker">WELCOME BACK</span>
+        <h1>Good to have you back.</h1>
+        <p>Log in to check your print requests and see what’s next.</p>
+        <div class="auth-note"><span>✦</span> Your print projects, all in one place</div>
+    </div>
+    <div class="auth-card">
+        <h2>Log in to PrintWise</h2>
+        <p class="auth-subtitle">Enter the email and password for your account.</p>
+        <form method="post" class="auth-form">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" required value="{{ request.form.get('email', '') }}">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button class="auth-submit" type="submit">Log in <span>→</span></button>
+        </form>
+        <p class="auth-switch">New to PrintWise? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+    </div>
+</section>
+{% endblock %}

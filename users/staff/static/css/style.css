@@ -1,1 +1,4 @@
-.staff-dashboard { --bs-primary: #147d73; }
+.staff-dashboard {
+    --bs-primary: var(--print-blue);
+    --bs-primary-rgb: 53, 106, 230;
+}

@@ -1,1 +1,4 @@
-.customer-dashboard { --bs-primary: #2463c5; }
+.customer-dashboard {
+    --bs-primary: var(--print-blue);
+    --bs-primary-rgb: 53, 106, 230;
+}

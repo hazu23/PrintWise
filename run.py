@@ -1,8 +1,6 @@
-"""Start the development server:  python run.py"""
-from app import create_app
-
-app = create_app()
+"""Start the development server with: python run.py"""
+from app import app
 
 if __name__ == "__main__":
-    # debug=True gives auto-reload and detailed errors for local development only.
+    # Debug mode is useful while learning, but should be off on a live website.
     app.run(host="127.0.0.1", port=5000, debug=True)

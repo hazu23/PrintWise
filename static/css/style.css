@@ -1,6 +1,53 @@
+:root {
+    --ink-navy: #18324b;
+    --print-blue: #356ae6;
+    --bright-coral: #f26b5b;
+    --paper-white: #ffffff;
+    --soft-gray: #f3f5f7;
+    --slate: #64748b;
+
+    --bs-primary: var(--print-blue);
+    --bs-primary-rgb: 53, 106, 230;
+    --bs-link-color: var(--print-blue);
+    --bs-link-hover-color: #2858c4;
+    --bs-body-color: var(--ink-navy);
+    --bs-body-bg: var(--soft-gray);
+}
+
 body {
-    background: #f7f8fa;
-    color: #202936;
+    background: var(--soft-gray);
+    color: var(--ink-navy);
+}
+
+.navbar-brand {
+    color: var(--ink-navy);
+}
+
+.navbar-brand:hover {
+    color: var(--print-blue);
+}
+
+.text-secondary {
+    color: var(--slate) !important;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--print-blue);
+    --bs-btn-border-color: var(--print-blue);
+    --bs-btn-hover-bg: #2858c4;
+    --bs-btn-hover-border-color: #2858c4;
+    --bs-btn-active-bg: #244db0;
+    --bs-btn-active-border-color: #244db0;
+    --bs-btn-disabled-bg: var(--print-blue);
+    --bs-btn-disabled-border-color: var(--print-blue);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--slate);
+    --bs-btn-border-color: #cbd5df;
+    --bs-btn-hover-bg: var(--ink-navy);
+    --bs-btn-hover-border-color: var(--ink-navy);
+    --bs-btn-hover-color: var(--paper-white);
 }
 
 .dashboard-card {
@@ -16,11 +63,11 @@ body {
 }
 
 .dashboard-card:hover {
-    border-color: #8aaef8;
+    border-color: var(--print-blue);
     color: inherit;
     transform: translateY(-2px);
 }
 
 .dashboard-card p {
-    color: #667085;
+    color: var(--slate);
 }

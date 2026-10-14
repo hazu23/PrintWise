@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Create account | PrintWise{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">{% endblock %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <span class="auth-kicker">PRINTWISE CUSTOMER ACCOUNT</span>
+        <h1>Your next print project starts here.</h1>
+        <p>Create an account to find local printshops and keep your requests in one place.</p>
+        <div class="auth-note"><span>✓</span> Track your print requests from quote to pickup</div>
+    </div>
+    <div class="auth-card">
+        <h2>Create your account</h2>
+        <p class="auth-subtitle">It only takes a minute.</p>
+        <form method="post" class="auth-form">
+            <label for="name">Your name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required value="{{ request.form.get('name', '') }}">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" required value="{{ request.form.get('email', '') }}">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <label for="confirm_password">Confirm password</label>
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+            <button class="auth-submit" type="submit">Create account <span>→</span></button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+    </div>
+</section>
+{% endblock %}
