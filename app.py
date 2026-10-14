@@ -18,6 +18,10 @@ def create_app():
     def index():
         return render_template("index.html")
 
+    @app.route("/design-preview")
+    def design_preview():
+        return render_template("design_preview.html")
+
     return app
 
 

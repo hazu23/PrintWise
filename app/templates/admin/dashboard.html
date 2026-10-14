@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import status_chip, empty_state with context %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="pw-page-head">
+  <div><h1>Administrator dashboard</h1><p>Everything happening across PrintWise.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('admin.new_shop') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add a print shop</a>
+</div>
+
+<div class="pw-stats mb-4">
+  <div class="pw-stat"><div class="pw-stat__value">{{ stats.active_shops }}<span class="fs-6 text-muted fw-normal"> of {{ stats.shops }}</span></div><div class="pw-stat__label">Shops visible to customers</div></div>
+  <div class="pw-stat"><div class="pw-stat__value">{{ stats.customers }}</div><div class="pw-stat__label">Customers</div></div>
+  <div class="pw-stat"><div class="pw-stat__value">{{ stats.orders }}</div><div class="pw-stat__label">Orders in total</div></div>
+  <div class="pw-stat"><div class="pw-stat__value">{{ counts.pending + counts.accepted + counts.printing + counts.ready }}</div><div class="pw-stat__label">Orders in progress</div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="pw-card pw-card--flush">
+      <div class="pw-card__head"><h2>Print shop clients</h2><a class="small" href="{{ url_for('admin.shops') }}">Manage</a></div>
+      {% if shop_rows %}
+        <div class="table-responsive"><table class="table pw-table">
+          <thead><tr><th>Shop</th><th>Owner login</th><th class="text-end">Orders</th><th>Status</th></tr></thead>
+          <tbody>{% for r in shop_rows %}<tr>
+            <td><a class="row-link" href="{{ url_for('admin.shop_detail', shop_id=r.shop.id) }}">{{ r.shop.name }}</a></td>
+            <td>{% for o in r.owners %}{{ o.username }}{% if o.must_change_password %} <span class="small text-muted">(not set up yet)</span>{% endif %}{% if not loop.last %}, {% endif %}{% else %}<span class="text-muted">No owner</span>{% endfor %}</td>
+            <td class="text-end tabular">{{ r.orders }}</td>
+            <td>{% if r.shop.is_active %}<span class="pw-chip pw-chip--ready">Visible</span>{% else %}<span class="pw-chip pw-chip--cancelled">Hidden</span>{% endif %}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      {% else %}
+        {{ empty_state("No print shops yet", "Add your first client shop. You create its account, and the owner chooses their own password at first login.", url_for('admin.new_shop'), "Add a print shop") }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="pw-card pw-card--flush">
+      <div class="pw-card__head"><h2>Latest orders</h2><a class="small" href="{{ url_for('admin.orders') }}">All orders</a></div>
+      {% if recent_orders %}
+        <ul class="list-group list-group-flush">
+          {% for o in recent_orders %}<li class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <div><span class="order-no">{{ o.order_no }}</span><div class="small text-muted">{{ o.customer_name }} to {{ o.shop_name }}</div></div>{{ status_chip(o.status) }}</li>{% endfor %}
+        </ul>
+      {% else %}<div class="pw-empty">No orders yet.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "layouts/public.html" %}
+{% from "_macros.html" import field, csrf with context %}
+{% block title %}Choose a new password{% endblock %}
+{% block content %}
+<div class="container pw-auth">
+  <div class="pw-auth__card">
+    <h1 class="mb-1">Choose a new password</h1>
+    <p class="text-muted mb-4">Use at least 8 characters, with a letter and a number.</p>
+    <div class="pw-card pw-card__body">
+      <form method="post" class="needs-validation" novalidate>
+        {{ csrf() }}
+        {{ field("password", "New password", form, errors, type="password", autocomplete="new-password", minlength="8", maxlength="128", pattern="(?=.*[A-Za-z])(?=.*\\d).{8,}", data_msg="Use at least 8 characters with a letter and a number.", data_password_main="", data_strength_input="pw-meter") }}
+        <div class="pw-strength" id="pw-meter" aria-hidden="true" style="margin-top:-.6rem"><span></span></div>
+        <small class="text-muted d-block mb-3" id="pw-meter-text" aria-live="polite"></small>
+        {{ field("confirm_password", "Confirm new password", form, errors, type="password", autocomplete="new-password", data_password_confirm="", data_msg="The two passwords do not match.") }}
+        <button class="btn btn-primary w-100" type="submit">Save new password</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import avatar, csrf with context %}
+{% block body %}
+<div class="pw-shell">
+  <aside class="pw-sidebar d-none d-lg-flex" aria-label="Sidebar">
+    <a class="pw-brand" href="{{ url_for(current_user.home_endpoint()) }}">
+      <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="" width="34" height="34"><span>PrintWise</span></a>
+    {% include "_nav.html" %}
+    <div class="pw-sidebar__foot">{% if current_user.shop %}{{ current_user.shop.name }}{% else %}{{ current_user.role_label }}{% endif %}</div>
+  </aside>
+
+  <div class="offcanvas offcanvas-start pw-offcanvas" tabindex="-1" id="mobileNav" aria-label="Menu">
+    <div class="offcanvas-header">
+      <a class="pw-brand text-white" href="{{ url_for(current_user.home_endpoint()) }}">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="" width="34" height="34"><span>PrintWise</span></a>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+    </div>
+    <div class="offcanvas-body pt-0 text-light">{% include "_nav.html" %}</div>
+  </div>
+
+  <div class="pw-main">
+    <header class="pw-topbar">
+      <button class="btn btn-outline-ink btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Open menu">
+        <i class="bi bi-list fs-5"></i></button>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-sm btn-light pw-bell" href="{{ url_for('account.notifications') }}" aria-label="Notifications{% if unread_count() %}, {{ unread_count() }} unread{% endif %}">
+          <i class="bi bi-bell fs-5"></i>{% if unread_count() %}<span class="pw-badge">{{ unread_count() }}</span>{% endif %}</a>
+        <div class="dropdown">
+          <button class="btn btn-light d-flex align-items-center gap-2 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ avatar(current_user) }}<span class="d-none d-sm-block text-start lh-sm"><span class="d-block fw-semibold">{{ current_user.first_name }}</span><small class="text-muted">{{ current_user.role_label }}</small></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('account.profile') }}">Your profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="dropdown-item" type="submit">Log out</button></form></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <main id="main" class="pw-content">
+      {% if current_user.is_customer and not current_user.email_verified %}
+        <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
+          <span>Confirm your email address so you get order updates. Check your inbox for the link.</span>
+          <form method="post" action="{{ url_for('auth.resend_verification') }}">{{ csrf() }}<button class="btn btn-sm btn-outline-ink" type="submit">Send the link again</button></form>
+        </div>
+      {% endif %}
+      {% include "_flashes.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

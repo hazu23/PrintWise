@@ -1,0 +1,23 @@
+{% extends "layouts/public.html" %}
+{% from "_macros.html" import field, csrf with context %}
+{% block title %}Set up your account{% endblock %}
+{% block content %}
+<div class="container pw-auth">
+  <div class="pw-auth__card pw-auth__card--wide">
+    <h1 class="mb-1">Set up your account</h1>
+    <p class="text-muted mb-4">The administrator gave you a temporary username and password. Choose your own now. You will use them from here on.</p>
+    <div class="pw-card pw-card__body">
+      <form method="post" class="needs-validation" novalidate>
+        {{ csrf() }}
+        {{ field("username", "New username", form, errors, autocomplete="username", minlength="3", maxlength="30", pattern="[A-Za-z0-9._]{3,30}", data_msg="Use 3 to 30 letters, numbers, dots or underscores.", help="Letters, numbers, dots and underscores.") }}
+        {{ field("password", "New password", form, errors, type="password", autocomplete="new-password", minlength="8", maxlength="128", pattern="(?=.*[A-Za-z])(?=.*\\d).{8,}", data_msg="Use at least 8 characters with a letter and a number.", data_password_main="", data_strength_input="pw-meter") }}
+        <div class="pw-strength" id="pw-meter" aria-hidden="true" style="margin-top:-.6rem"><span></span></div>
+        <small class="text-muted d-block mb-3" id="pw-meter-text" aria-live="polite"></small>
+        {{ field("confirm_password", "Confirm new password", form, errors, type="password", autocomplete="new-password", data_password_confirm="", data_msg="The two passwords do not match.") }}
+        <button class="btn btn-primary w-100 mb-3" type="submit">Save and continue</button>
+      </form>
+      <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="btn btn-link btn-sm p-0" type="submit" data-no-lock>Log out instead</button></form>
+    </div>
+  </div>
+</div>
+{% endblock %}

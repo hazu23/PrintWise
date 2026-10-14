@@ -1,0 +1,29 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import csrf, confirm_form, empty_state with context %}
+{% block title %}Print shops{% endblock %}
+{% block content %}
+<div class="pw-page-head">
+  <div><h1>Print shops</h1><p>Your client shops. You create each account, then the owner sets their own username and password.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('admin.new_shop') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add a print shop</a>
+</div>
+<div class="pw-card pw-card--flush">
+  {% if rows %}
+    <div class="table-responsive"><table class="table pw-table">
+      <thead><tr><th>Shop</th><th>Address</th><th>Owner login</th><th class="text-end">Orders</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>{% for r in rows %}<tr>
+        <td><a class="row-link" href="{{ url_for('admin.shop_detail', shop_id=r.shop.id) }}">{{ r.shop.name }}</a></td>
+        <td>{{ r.shop.address }}</td>
+        <td>{% for o in r.owners %}{{ o.username }}{% if not loop.last %}, {% endif %}{% else %}<span class="text-muted">No owner</span>{% endfor %}</td>
+        <td class="text-end tabular">{{ r.orders }}</td>
+        <td>{% if r.shop.is_active %}<span class="pw-chip pw-chip--ready">Visible</span>{% else %}<span class="pw-chip pw-chip--cancelled">Hidden</span>{% endif %}</td>
+        <td class="text-end text-nowrap">
+          <a class="btn btn-sm btn-outline-ink" href="{{ url_for('admin.edit_shop', shop_id=r.shop.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('admin.toggle_shop', shop_id=r.shop.id) }}" class="d-inline">{{ csrf() }}
+            <button class="btn btn-sm btn-outline-secondary" type="submit">{{ "Hide" if r.shop.is_active else "Show" }}</button></form>
+        </td></tr>{% endfor %}</tbody>
+    </table></div>
+  {% else %}
+    {{ empty_state("No print shops yet", "Add your first client shop to get started.", url_for('admin.new_shop'), "Add a print shop") }}
+  {% endif %}
+</div>
+{% endblock %}

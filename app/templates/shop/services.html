@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import confirm_form, empty_state with context %}
+{% block title %}Services{% endblock %}
+{% block content %}
+<div class="pw-page-head">
+  <div><h1>Services</h1><p>What customers can order from your shop. Customers only see the sizes, paper types and colors you list here.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('shop.new_service') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add a service</a>
+</div>
+<div class="pw-card pw-card--flush">
+  {% if services %}
+    <div class="table-responsive">
+      <table class="table pw-table">
+        <thead><tr><th>Service</th><th>Paper sizes</th><th>Paper types</th><th>Color</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+        <tbody>
+          {% for s in services %}
+            <tr>
+              <td><a class="row-link" href="{{ url_for('shop.edit_service', service_id=s.id) }}">{{ s.name }}</a>{% if s.description %}<div class="small text-muted">{{ s.description }}</div>{% endif %}</td>
+              <td>{{ s.size_options|length }} {{ "size" if s.size_options|length == 1 else "sizes" }}</td>
+              <td>{{ s.type_options|join(", ") }}</td>
+              <td>{% for c in s.color_options %}{{ catalog.COLOR_MODES[c] }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+              <td>{% if s.is_active %}<span class="pw-chip pw-chip--ready">On offer</span>{% else %}<span class="pw-chip pw-chip--cancelled">Hidden</span>{% endif %}</td>
+              <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-ink" href="{{ url_for('shop.edit_service', service_id=s.id) }}">Edit</a>
+                {{ confirm_form(url_for('shop.delete_service', service_id=s.id), "Delete the service " ~ s.name ~ "? Past orders keep its name.", "Delete", "btn btn-sm btn-outline-danger", "Yes, delete") }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {{ empty_state("No services yet", "Add the jobs your shop does, such as document printing or photo printing.", url_for('shop.new_service'), "Add a service") }}
+  {% endif %}
+</div>
+{% endblock %}

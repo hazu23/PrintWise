@@ -1,0 +1,27 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import status_chip, pagination_nav, empty_state with context %}
+{% block title %}All orders{% endblock %}
+{% block content %}
+<div class="pw-page-head"><div><h1>All orders</h1><p>A read-only view of orders across every shop.</p></div></div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3"><label class="visually-hidden" for="shop">Shop</label>
+    <select class="form-select" id="shop" name="shop" data-autosubmit><option value="">All shops</option>
+      {% for s in shops %}<option value="{{ s.id }}"{% if shop_id == s.id %} selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="visually-hidden" for="status">Status</label>
+    <select class="form-select" id="status" name="status" data-autosubmit><option value="">All statuses</option>
+      <option value="open"{% if status == "open" %} selected{% endif %}>In progress</option>
+      {% for key, label in [("pending","Submitted"),("accepted","Accepted"),("printing","Printing"),("ready","Ready for pickup"),("completed","Completed"),("rejected","Declined"),("cancelled","Cancelled")] %}<option value="{{ key }}"{% if status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-6"><div class="input-group"><label class="visually-hidden" for="q">Search</label>
+    <input class="form-control" type="search" id="q" name="q" value="{{ q }}" placeholder="Order number, customer, service or file" maxlength="60"><button class="btn btn-outline-ink" type="submit">Search</button></div></div>
+</form>
+<div class="pw-card pw-card--flush">
+  {% if orders %}
+    <div class="table-responsive"><table class="table pw-table">
+      <thead><tr><th>Order</th><th>Shop</th><th>Customer</th><th>Job</th><th>Submitted</th><th>Status</th></tr></thead>
+      <tbody>{% for o in orders %}<tr><td class="order-no fw-semibold">{{ o.order_no }}</td><td>{{ o.shop_name }}</td><td>{{ o.customer_name }}</td>
+        <td>{{ o.service_name }}, {{ o.copies }} {{ "copy" if o.copies == 1 else "copies" }}</td><td>{{ o.created_at|dt }}</td><td>{{ status_chip(o.status) }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {{ pagination_nav(pager, "admin.orders") }}
+  {% else %}{{ empty_state("No orders match", "Try different filters.", url_for('admin.orders'), "Clear filters") }}{% endif %}
+</div>
+{% endblock %}

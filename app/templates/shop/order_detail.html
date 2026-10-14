@@ -1,0 +1,136 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import status_chip, run_tracker, csrf with context %}
+{% block title %}Order {{ order.order_no }}{% endblock %}
+{% block content %}
+{% set times = {} %}{% for h in history %}{% set _ = times.update({h.status: h.created_at}) %}{% endfor %}
+<div class="pw-page-head">
+  <div>
+    <a class="small" href="{{ url_for('shop.orders') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> All orders</a>
+    <h1 class="mt-1"><span class="order-no">{{ order.order_no }}</span></h1>
+    <p>From {{ customer.full_name }}, sent {{ order.created_at|dt }}</p>
+  </div>
+  <div>{{ status_chip(order.status) }}</div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="pw-card mb-4">
+      <div class="pw-card__head"><h2>Progress</h2></div>
+      <div class="pw-card__body">{{ run_tracker(order, times) }}</div>
+    </div>
+
+    <div class="pw-card mb-4">
+      <div class="pw-card__head"><h2>The job</h2>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('account.order_file', order_id=order.id) }}"><i class="bi bi-download" aria-hidden="true"></i> Download file</a></div>
+      <div class="pw-card__body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">File</dt><dd class="col-sm-8 text-break">{{ order.file_name }} <span class="text-muted">({{ order.file_size|filesize }})</span></dd>
+          <dt class="col-sm-4">Service</dt><dd class="col-sm-8">{{ order.service_name }}</dd>
+          <dt class="col-sm-4">Paper size</dt><dd class="col-sm-8">{{ order.paper_size }}</dd>
+          <dt class="col-sm-4">Paper type</dt><dd class="col-sm-8">{{ order.paper_type }}</dd>
+          <dt class="col-sm-4">Color</dt><dd class="col-sm-8">{{ order.color_label }}</dd>
+          <dt class="col-sm-4">Sides</dt><dd class="col-sm-8">{{ order.sides_label }}</dd>
+          <dt class="col-sm-4">Copies</dt><dd class="col-sm-8">{{ order.copies }}</dd>
+          {% if order.pages %}<dt class="col-sm-4">Pages</dt><dd class="col-sm-8">{{ order.pages }}</dd>{% endif %}
+          <dt class="col-sm-4">Notes</dt><dd class="col-sm-8 mb-0">{{ order.notes or "None" }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="pw-card">
+      <div class="pw-card__head"><h2>History</h2></div>
+      <ul class="list-group list-group-flush">
+        {% for h in history %}
+          <li class="list-group-item px-4 py-2 d-flex justify-content-between gap-3 flex-wrap">
+            <span>{{ status_chip(h.status) }}{% if h.note %} <span class="text-muted ms-1">{{ h.note }}</span>{% endif %}</span>
+            <small class="text-muted">{{ h.created_at|dt }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="pw-card mb-4">
+      <div class="pw-card__head"><h2>Next step</h2></div>
+      <div class="pw-card__body">
+        {% if order.status == "pending" %}
+          <form method="post" action="{{ url_for('shop.update_status', order_id=order.id) }}" class="mb-3">
+            {{ csrf() }}<input type="hidden" name="status" value="accepted">
+            <button class="btn btn-primary w-100" type="submit">Accept this order</button>
+          </form>
+        {% elif order.status == "accepted" %}
+          <form method="post" action="{{ url_for('shop.update_status', order_id=order.id) }}" class="mb-2">
+            {{ csrf() }}<input type="hidden" name="status" value="printing">
+            <button class="btn btn-primary w-100" type="submit">Start printing</button>
+          </form>
+          <form method="post" action="{{ url_for('shop.update_status', order_id=order.id) }}" class="mb-3">
+            {{ csrf() }}<input type="hidden" name="status" value="ready">
+            <button class="btn btn-outline-ink w-100" type="submit">Skip to ready for pickup</button>
+          </form>
+        {% elif order.status == "printing" %}
+          <form method="post" action="{{ url_for('shop.update_status', order_id=order.id) }}">
+            {{ csrf() }}<input type="hidden" name="status" value="ready">
+            <button class="btn btn-primary w-100" type="submit">Mark ready for pickup</button>
+          </form>
+        {% elif order.status == "ready" %}
+          <p class="text-muted">When the customer arrives, tell them the price, take the payment, then record it here to close the order.</p>
+          <form method="post" action="{{ url_for('shop.record_payment', order_id=order.id) }}" class="needs-validation" novalidate>
+            {{ csrf() }}
+            <div class="mb-3">
+              <label class="form-label" for="f-amount">Amount received (PHP)</label>
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                <input class="form-control{% if errors.amount %} is-invalid{% endif %}" id="f-amount" name="amount" type="number" min="0" step="0.01" required inputmode="decimal" value="{{ form.get('amount', '') }}" data-msg="Enter the amount, like 150.00.">
+              </div>
+              {% if errors.amount %}<div class="invalid-feedback d-block">{{ errors.amount }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="f-method">Paid by</label>
+              <select class="form-select{% if errors.method %} is-invalid{% endif %}" id="f-method" name="method" required>
+                {% for key, label in catalog.PAYMENT_METHODS.items() %}<option value="{{ key }}"{% if form.get('method', 'cash') == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+              </select>
+              {% if errors.method %}<div class="invalid-feedback d-block">{{ errors.method }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="f-note">Note <span class="text-muted fw-normal">(optional)</span></label>
+              <input class="form-control" id="f-note" name="note" maxlength="255" value="{{ form.get('note', '') }}">
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Record payment and complete</button>
+          </form>
+        {% elif order.status == "completed" and payment %}
+          <dl class="row mb-0">
+            <dt class="col-5">Receipt</dt><dd class="col-7 order-no">{{ payment.receipt_no }}</dd>
+            <dt class="col-5">Amount</dt><dd class="col-7">{{ payment.amount|peso }}</dd>
+            <dt class="col-5">Paid by</dt><dd class="col-7">{{ payment.method_label }}</dd>
+            <dt class="col-5">Recorded</dt><dd class="col-7 mb-0">{{ payment.created_at|dt }}</dd>
+          </dl>
+        {% elif order.status == "rejected" %}
+          <p class="mb-0">You declined this order.{% if order.status_note %} Reason: {{ order.status_note }}{% endif %}</p>
+        {% else %}
+          <p class="mb-0 text-muted">The customer cancelled this order.</p>
+        {% endif %}
+
+        {% if order.status in ("pending", "accepted") %}
+          <hr>
+          <form method="post" action="{{ url_for('shop.update_status', order_id=order.id) }}" class="needs-validation" novalidate>
+            {{ csrf() }}<input type="hidden" name="status" value="rejected">
+            <label class="form-label" for="f-reason">Cannot take this order?</label>
+            <textarea class="form-control mb-2" id="f-reason" name="note" rows="2" maxlength="255" required placeholder="Tell the customer why, for example: the file will not open" data-msg="Write a short reason for the customer."></textarea>
+            <button class="btn btn-outline-danger btn-sm" type="submit">Decline order</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="pw-card">
+      <div class="pw-card__head"><h2>Customer</h2></div>
+      <div class="pw-card__body">
+        <p class="fw-semibold mb-1">{{ customer.full_name }}</p>
+        <p class="mb-1 small"><i class="bi bi-envelope" aria-hidden="true"></i> {{ customer.email }}</p>
+        {% if customer.phone %}<p class="mb-0 small"><i class="bi bi-telephone" aria-hidden="true"></i> {{ customer.phone }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

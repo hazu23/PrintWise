@@ -1,0 +1,48 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import field, textarea, csrf with context %}
+{% block title %}{{ "Edit " ~ shop.name if shop else "Add a print shop" }}{% endblock %}
+{% block content %}
+<div class="pw-page-head"><div><a class="small" href="{{ url_for('admin.shops') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Print shops</a>
+  <h1 class="mt-1">{{ "Edit " ~ shop.name if shop else "Add a print shop" }}</h1>
+  {% if not shop %}<p>Create the shop and its owner's first login. The owner will be asked to choose their own username and password the first time they log in.</p>{% endif %}</div></div>
+
+<form method="post" class="needs-validation" novalidate>
+  {{ csrf() }}
+  <div class="row g-4">
+    <div class="col-lg-{{ 6 if not shop else 8 }}">
+      <div class="pw-card pw-card__body">
+        <h2 class="h5 mb-3">Shop</h2>
+        {{ field("name", "Shop name", form, errors, minlength="2", maxlength="120", data_msg="Enter the shop name.") }}
+        {{ field("address", "Address", form, errors, minlength="5", maxlength="255", data_msg="Enter the full address (at least 5 characters).") }}
+        <div class="row">
+          {{ field("contact_phone", "Shop phone", form, errors, type="tel", required=false, class="col-md-6", maxlength="20", pattern="[0-9+ \\-]{7,20}", data_msg="Enter a valid phone number, like 0917 123 4567.") }}
+          {{ field("contact_email", "Shop email", form, errors, type="email", required=false, class="col-md-6", maxlength="120", data_msg="Enter a valid email address.") }}
+        </div>
+        {{ field("hours", "Opening hours", form, errors, required=false, maxlength="160", placeholder="For example: Mon-Sat 8:00 AM - 7:00 PM") }}
+        {{ textarea("description", "About the shop", form, errors, rows=3, maxlength="1000") }}
+        {% if shop %}
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="f-is_active" name="is_active" value="1"{% if form.get('is_active') %} checked{% endif %}>
+            <label class="form-check-label" for="f-is_active">Visible to customers</label></div>
+        {% endif %}
+      </div>
+    </div>
+    {% if not shop %}
+    <div class="col-lg-6">
+      <div class="pw-card pw-card__body">
+        <h2 class="h5 mb-3">Owner account</h2>
+        {{ field("owner_name", "Owner's full name", form, errors, minlength="2", maxlength="120", data_msg="Enter the owner's full name.") }}
+        <div class="row">
+          {{ field("owner_username", "Starting username", form, errors, class="col-md-6", minlength="3", maxlength="30", pattern="[A-Za-z0-9._]{3,30}", data_msg="Use 3 to 30 letters, numbers, dots or underscores.") }}
+          {{ field("owner_phone", "Owner's phone", form, errors, type="tel", required=false, class="col-md-6", maxlength="20", pattern="[0-9+ \\-]{7,20}", data_msg="Enter a valid phone number.") }}
+        </div>
+        {{ field("owner_email", "Owner's email", form, errors, type="email", maxlength="120", data_msg="Enter a valid email address.") }}
+        {{ field("temporary_password", "Temporary password", form, errors, type="text", minlength="8", maxlength="128", pattern="(?=.*[A-Za-z])(?=.*\\d).{8,}", data_msg="Use at least 8 characters with a letter and a number.", autocomplete="off", help="Generated for you. You will see it once after saving, so you can pass it to the owner.") }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="d-flex gap-2 mt-4"><button class="btn btn-primary" type="submit">{{ "Save shop" if shop else "Create shop and owner account" }}</button>
+    <a class="btn btn-outline-ink" href="{{ url_for('admin.shops') }}">Cancel</a></div>
+</form>
+{% endblock %}

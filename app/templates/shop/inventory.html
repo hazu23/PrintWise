@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% from "_macros.html" import empty_state with context %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<div class="pw-page-head">
+  <div><h1>Inventory</h1><p>Paper, ink and supplies. Update quantities by hand whenever you restock or run low.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('shop.new_item') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add an item</a>
+</div>
+
+{% if low_count %}<div class="alert alert-warning" role="status"><strong>{{ low_count }} {{ "item is" if low_count == 1 else "items are" }} running low.</strong> Restock soon so orders are not delayed.</div>{% endif %}
+
+<form method="get" class="mb-3" style="max-width: 16rem">
+  <label class="visually-hidden" for="category">Category</label>
+  <select class="form-select" id="category" name="category" data-autosubmit>
+    <option value="">All categories</option>
+    {% for key, label in catalog.INVENTORY_CATEGORIES.items() %}<option value="{{ key }}"{% if category == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+</form>
+
+<div class="pw-card pw-card--flush">
+  {% if items %}
+    <div class="table-responsive">
+      <table class="table pw-table">
+        <thead><tr><th>Item</th><th>Category</th><th class="text-end">In stock</th><th class="text-end">Low at</th><th>Stock</th><th><span class="visually-hidden">Open</span></th></tr></thead>
+        <tbody>
+          {% for i in items %}
+            <tr>
+              <td><a class="row-link" href="{{ url_for('shop.inventory_detail', item_id=i.id) }}">{{ i.name }}</a></td>
+              <td>{{ i.category_label }}</td>
+              <td class="text-end tabular">{{ "{:,}".format(i.quantity) }} {{ i.unit }}</td>
+              <td class="text-end tabular">{{ "{:,}".format(i.low_stock_level) }}</td>
+              <td>{% if i.is_out %}<span class="pw-chip pw-chip--printing">Out of stock</span>{% elif i.is_low %}<span class="pw-chip pw-chip--pending">Running low</span>{% else %}<span class="pw-chip pw-chip--ready">Enough</span>{% endif %}</td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-ink" href="{{ url_for('shop.inventory_detail', item_id=i.id) }}">Update stock</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {{ empty_state("No items yet", "Add the paper and ink your shop uses so you can keep track of stock.", url_for('shop.new_item'), "Add an item") }}
+  {% endif %}
+</div>
+{% endblock %}
