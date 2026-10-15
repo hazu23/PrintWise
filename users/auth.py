@@ -1,12 +1,12 @@
-"""Registration, login, logout, and simple role checks."""
+#Registration, login, logout, and simple role checks
 
 from functools import wraps
 
-from flask import flash, redirect, render_template, request, session, url_for
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import flash, redirect, render_template, request, session, url_for           # these are used by the login and registration routes
+from werkzeug.security import check_password_hash, generate_password_hash               
 
 from users import auth_bp
-from users.db import get_db
+from users.db import get_db             # provides a connection to the database
 
 
 @auth_bp.route("/register", methods=("GET", "POST"))

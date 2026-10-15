@@ -1,21 +1,23 @@
-"""Small MySQL helpers for the PrintWise student project."""
+# i might switch to mysql-connector-python as connector for mysql in the future
 
-from flask import current_app, g
+from flask import current_app, g 
+    ## current_app - it's the current flask app handling the request
+    ## g - temp storage for the request
 import pymysql
-from pymysql.cursors import DictCursor
+from pymysql.cursors import DictCursor # imports mymysql dictionary cursor
 
 
 def get_db():
-    """Open one MySQL connection for the current web request."""
-    if "db" not in g:
-        g.db = pymysql.connect(
-            host=current_app.config["DB_HOST"],
+    """open one MySQL connection for the current web request"""
+    if "db" not in g:                                       # checks flask’s tempo storage, g, to see if this request already has a database connection
+        g.db = pymysql.connect(                             # if there isn’t one, it connects to MySQL and saves the connection in g.db
+            host=current_app.config["DB_HOST"],             # where mysql is running (host & port)
             port=current_app.config["DB_PORT"],
-            user=current_app.config["DB_USER"],
+            user=current_app.config["DB_USER"],             
             password=current_app.config["DB_PASSWORD"],
-            database=current_app.config["DB_NAME"],
+            database=current_app.config["DB_NAME"],         #which database to use
             charset="utf8mb4",
-            cursorclass=DictCursor,
+            cursorclass=DictCursor,                         # returns rows that can be accessed by column name
         )
     return g.db
 
