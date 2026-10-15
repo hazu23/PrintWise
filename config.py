@@ -1,10 +1,8 @@
-# Application settings used by the simple Flask starter.
 import os
 from pathlib import Path
 
 
 def load_local_env():
-    """Read simple KEY=value settings from the project's .env file."""
     env_file = Path(__file__).with_name(".env")
     if not env_file.exists():
         return
@@ -31,7 +29,7 @@ class Config:
         "dev-key-change-before-deployment",
     )
 
-    # Connection settings for a local MySQL server (for example, XAMPP).
+    # Connection settings for a local MySQL server (XAMPP).
     DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
     DB_PORT = int(os.environ.get("DB_PORT", "3306"))
     DB_USER = os.environ.get("DB_USER", "root")

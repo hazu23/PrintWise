@@ -5,7 +5,6 @@ const usernameInput = document.getElementById("username");
 const usernameFeedback = document.getElementById("username-help");
 const emailInput = document.getElementById("email");
 const emailFeedback = document.getElementById("email-help");
-const emailCustomConfirmed = document.getElementById("email-custom-confirmed");
 const passwordInput = document.getElementById("password");
 const passwordFeedback = document.getElementById("password-help");
 const confirmPasswordInput = document.getElementById("confirm_password");
@@ -50,9 +49,30 @@ function blockSpaces(input, feedback, message) {
         }
     });
 }
-
 if (passwordInput && passwordFeedback) {
     blockSpaces(passwordInput, passwordFeedback, "Spaces aren't allowed in passwords.");
+
+    function showPasswordError() {
+        const password = passwordInput.value;
+        let message = "";
+
+        if (password && password.length < 8) {
+            message = "Use at least 8 characters.";
+        } else if (password && !/[A-Za-z\p{L}]/u.test(password)) {
+            message = "Add at least one letter.";
+        } else if (password && !/[0-9]/u.test(password)) {
+            message = "Add at least one number.";
+        } else if (password && !/[^\p{L}\p{N}\s]/u.test(password)) {
+            message = "Add at least one special character, such as ! or #.";
+        }
+
+        passwordFeedback.textContent = message;
+        passwordInput.setAttribute("aria-invalid", message ? "true" : "false");
+        return message;
+    }
+
+    passwordInput.addEventListener("input", showPasswordError);
+    passwordInput.addEventListener("blur", showPasswordError);
 }
 
 if (confirmPasswordInput && confirmPasswordFeedback) {
@@ -239,55 +259,18 @@ if (emailInput && emailFeedback) {
 
     let emailCheckTimer;
     let emailCheckNumber = 0;
-    let confirmedEmail = "";
-
-    function showEmailSuggestion(suggestedEmail) {
-        emailFeedback.textContent = `Did you mean ${suggestedEmail}? `;
-
-        const useSuggestionButton = document.createElement("button");
-        useSuggestionButton.type = "button";
-        useSuggestionButton.className = "btn btn-link btn-sm p-0";
-        useSuggestionButton.textContent = "Use suggestion";
-        useSuggestionButton.addEventListener("click", () => {
-            emailInput.value = suggestedEmail;
-            emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-            emailInput.focus();
-        });
-
-        const keepAddressButton = document.createElement("button");
-        keepAddressButton.type = "button";
-        keepAddressButton.className = "btn btn-link btn-sm p-0";
-        keepAddressButton.textContent = "Keep my address";
-        keepAddressButton.addEventListener("click", () => {
-            emailCustomConfirmed.value = "yes";
-            confirmedEmail = emailInput.value;
-            emailFeedback.textContent = "Okay, we'll keep this address. Make sure it is correct.";
-            emailInput.setAttribute("aria-invalid", "false");
-        });
-
-        emailFeedback.append(useSuggestionButton, document.createTextNode(" or "), keepAddressButton);
-        emailInput.setAttribute("aria-invalid", "true");
-    }
 
     function showEmailError() {
-        // A newer check makes any older response out of date.
+        // Ignore earlier responses when the email changes during a check.
         emailCheckNumber += 1;
         const thisCheckNumber = emailCheckNumber;
         clearTimeout(emailCheckTimer);
 
-        if (emailCustomConfirmed.value === "yes" && confirmedEmail === emailInput.value) {
-            emailFeedback.textContent = "Okay, we'll keep this address. Make sure it is correct.";
-            emailInput.setAttribute("aria-invalid", "false");
-            return;
-        }
-
-        const hasSpaces = /\s/.test(emailInput.value);
         let message = "";
-
-        if (hasSpaces) {
+        if (/\s/.test(emailInput.value)) {
             message = "Spaces aren't allowed in an email address.";
-        } else if (emailInput.value.length > 254) {
-            message = "An email address can't be longer than 254 characters.";
+        } else if (emailInput.value.length > 100) {
+            message = "An email address can't be longer than 100 characters.";
         } else if (emailInput.value && emailInput.validity.typeMismatch) {
             message = "Enter a valid email address, such as name@example.com.";
         }
@@ -298,7 +281,6 @@ if (emailInput && emailFeedback) {
             return;
         }
 
-        // Wait briefly so the app does not check the domain after every keystroke.
         emailFeedback.textContent = "Checking whether this email domain can receive mail…";
         emailInput.setAttribute("aria-invalid", "false");
 
@@ -309,42 +291,26 @@ if (emailInput && emailFeedback) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email: emailInput.value }),
                 });
-
-                if (!response.ok) {
-                    throw new Error("Email check failed.");
-                }
-
                 const result = await response.json();
 
-                // Ignore the result if the user has changed the email since this check began.
                 if (thisCheckNumber !== emailCheckNumber) {
-                    return;
-                }
-
-                if (result.suggestion) {
-                    showEmailSuggestion(result.suggestion);
                     return;
                 }
 
                 const domainError = result.valid
                     ? ""
-                    : "This email domain can't receive mail. Check the spelling.";
+                    : "This email address is not valid. Check the spelling.";
                 emailFeedback.textContent = domainError;
                 emailInput.setAttribute("aria-invalid", domainError ? "true" : "false");
             } catch (error) {
                 if (thisCheckNumber === emailCheckNumber) {
-                    emailFeedback.textContent = "The domain couldn't be checked now. It will be checked again when you register.";
+                    emailFeedback.textContent = "The email domain couldn't be checked right now.";
                     emailInput.setAttribute("aria-invalid", "false");
                 }
             }
-        }, 700);
+        }, 500);
     }
 
-    emailInput.addEventListener("input", () => {
-        emailCustomConfirmed.value = "";
-        confirmedEmail = "";
-        showEmailError();
-    });
+    emailInput.addEventListener("input", showEmailError);
     emailInput.addEventListener("blur", showEmailError);
-    showEmailError();
 }

@@ -15,13 +15,8 @@ def orders():
     return render_template("staff/orders.html")
 
 
-@staff_bp.route("/services")
-@role_required("staff")
-def services():
-    return render_template("staff/services.html")
 
 
-@staff_bp.route("/quotations")
-@role_required("staff")
-def quotations():
-    return render_template("staff/quotations.html")
+
+
+

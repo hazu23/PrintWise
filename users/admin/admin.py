@@ -8,19 +8,6 @@ from users.auth import role_required
 def dashboard():
     return render_template("admin/dashboard.html")
 
-
-@admin_bp.route("/printshops")
-@role_required("admin")
-def printshops():
-    return render_template("admin/printshops.html")
-
-
-@admin_bp.route("/accounts")
-@role_required("admin")
-def accounts():
-    return render_template("admin/accounts.html")
-
-
 @admin_bp.route("/orders")
 @role_required("admin")
 def orders():

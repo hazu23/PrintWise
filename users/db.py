@@ -1,4 +1,4 @@
-# i might switch to mysql-connector-python as connector for mysql in the future
+# 
 
 from flask import current_app, g
 # current_app - it's the current flask app handling the request
@@ -8,15 +8,14 @@ from pymysql.cursors import DictCursor  # imports mymysql dictionary cursor
 
 
 def get_db():
-    """Open one MySQL connection and reuse it during this request."""
-    if "db" not in g:  # checks flask’s tempo storage, g, to see if this request already has a database connection
+    if "db" not in g:                                       # checks flask’s tempo storage, g, to see if this request already has a database connection
         # Flask's g storage keeps this connection available during the request.
-        g.db = pymysql.connect(  # if there isn’t one, it connects to MySQL and saves the connection in g.db
-            host=current_app.config["DB_HOST"],  # where mysql is running (host & port)
+        g.db = pymysql.connect(                             # if there isn’t one, it connects to MySQL and saves the connection in g.db
+            host=current_app.config["DB_HOST"],             # where mysql is running (host & port)
             port=current_app.config["DB_PORT"],
             user=current_app.config["DB_USER"],
             password=current_app.config["DB_PASSWORD"],
-            database=current_app.config["DB_NAME"],  # which database to use
+            database=current_app.config["DB_NAME"],         # which database to use
             charset="utf8mb4",
             cursorclass=DictCursor,  # returns rows that can be accessed by column name
         )
@@ -24,14 +23,14 @@ def get_db():
 
 
 def close_db(error=None):
-    """Close the request's database connection when the request ends."""
+    # Close the request's database connection when the request ends
     database = g.pop("db", None)
     if database is not None:
         database.close()
 
 
 def init_db():
-    """Create the accounts table if it does not exist yet."""
+    # Create the accounts table if it does not exist yet
     database = get_db()
     with database.cursor() as cursor:
         cursor.execute(
@@ -58,4 +57,5 @@ def init_db():
             # Now every row has a value, so make usernames required and unique.
             cursor.execute("ALTER TABLE users MODIFY username VARCHAR(30) NOT NULL")
             cursor.execute("ALTER TABLE users ADD UNIQUE (username)")
+
     database.commit()

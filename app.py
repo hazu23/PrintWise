@@ -1,4 +1,4 @@
-# this creates your flask application and registers the admin, staff, user, and authentication routes
+# creates my flask application and registers the admin, staff, user, and authentication routes
 from flask import Flask, render_template
 from config import Config
 from users import admin_bp, auth_bp, staff_bp, user_bp
@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Create the accounts table the first time the app starts.
+    # creates the accounts table after app is starting
     with app.app_context():
         init_db()
     app.teardown_appcontext(close_db)
@@ -25,9 +25,9 @@ def create_app():
     def index():
         return render_template("index.html")
 
-    @app.route("/design-preview")
+    @app.route("/design-idea")
     def design_preview():
-        return render_template("design_preview.html")
+        return render_template("test.html")
 
     return app
 

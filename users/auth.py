@@ -1,34 +1,45 @@
 #Registration, login, logout, and simple role checks
 
 import re
-from difflib import SequenceMatcher
 from functools import wraps
 
-from flask import flash, jsonify, redirect, render_template, request, session, url_for  # these are used by the login and registration routes
+from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for  # these are used by the login and registration routes
 from werkzeug.security import check_password_hash, generate_password_hash
 from email_validator import EmailNotValidError, validate_email
 
 from users import auth_bp
 from users.db import get_db  # provides a connection to the database
 
-COMMON_EMAIL_DOMAINS = (
+EMAIL_PROVIDER_DOMAINS = {
     "gmail.com",
     "googlemail.com",
-    "yahoo.com",
-    "yahoo.co.uk",
-    "rocketmail.com",
-    "ymail.com",
     "outlook.com",
     "hotmail.com",
     "live.com",
     "msn.com",
+    "yahoo.com",
+    "yahoo.co.uk",
+    "yahoo.ca",
+    "yahoo.com.au",
+    "ymail.com",
+    "rocketmail.com",
     "icloud.com",
     "me.com",
     "mac.com",
     "aol.com",
     "proton.me",
     "protonmail.com",
-)
+    "gmx.com",
+    "gmx.net",
+    "mail.com",
+    "zoho.com",
+    "fastmail.com",
+    "hey.com",
+    "tuta.com",
+    "tutanota.com",
+    "yandex.com",
+    "yandex.ru",
+}
 
 
 def is_valid_full_name(name):
@@ -70,36 +81,19 @@ def is_valid_full_name(name):
 
 
 def is_valid_email(email):
-    """Check email syntax and whether its domain can receive email."""
-    if len(email) > 254:
+    """Check email format and whether its domain can receive email."""
+    if not email or len(email) > 100 or any(character.isspace() for character in email):
         return False
 
     try:
-        # Check the domain's mail records; this works with different email providers.
-        validate_email(email, check_deliverability=True, timeout=3)
+        # Check the domain's mail records; this supports different email providers.
+        validated_email = validate_email(email, check_deliverability=True, timeout=3)
     except EmailNotValidError:
         return False
 
-    return True
-
-
-def suggest_email_address(email):
-    """Suggest a common provider when its domain looks misspelled."""
-    if email.count("@") != 1:
-        return None
-
-    email_name, domain = email.split("@")
-    closest_domain = max(
-        COMMON_EMAIL_DOMAINS,
-        key=lambda provider: SequenceMatcher(None, domain, provider).ratio(),
-    )
-    similarity = SequenceMatcher(None, domain, closest_domain).ratio()
-
-    # Only suggest when the typed domain is very close to a common provider.
-    if domain != closest_domain and similarity >= 0.78:
-        return f"{email_name}@{closest_domain}"
-
-    return None
+    # Only allow known email-provider domains, so website domains like youtube.com are rejected.
+    domain = validated_email.domain.lower().rstrip(".")
+    return domain in EMAIL_PROVIDER_DOMAINS
 
 
 @auth_bp.route("/register", methods=("GET", "POST"))
@@ -111,7 +105,6 @@ def register():
         email = request.form.get("email", "").lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
-        suggested_email = suggest_email_address(email)
 
         if not name or not username or not email or not password:
             flash("Please fill in every field.", "error")
@@ -126,22 +119,23 @@ def register():
                 "error",
             )
         elif any(character.isspace() for character in email):
-            flash("Spaces aren't allowed in an email address.", "error")
-        elif len(email) > 254:
-            flash("Email addresses can't be longer than 254 characters.", "error")
-        elif suggested_email and request.form.get("email_custom_confirmed") != "yes":
-            flash(
-                f"Check your email address. Did you mean {suggested_email}? Correct it or confirm the address you entered.",
-                "error",
-            )
+            flash("Spaces are not allowed in an email address.", "error")
+        elif len(email) > 100:
+            flash("Email addresses can't be longer than 100 characters.", "error")
         elif not is_valid_email(email):
-            flash("Enter a valid email address with a domain that can receive email.", "error")
+            flash("Enter a valid email address.", "error")
         elif any(character.isspace() for character in password) or any(
             character.isspace() for character in confirm_password
         ):
             flash("Spaces aren't allowed in passwords.", "error")
         elif len(password) < 8:
             flash("Your password must be at least 8 characters long.", "error")
+        elif not any(character.isalpha() for character in password):
+            flash("Your password must include at least one letter.", "error")
+        elif not any("0" <= character <= "9" for character in password):
+            flash("Your password must include at least one number.", "error")
+        elif not any(not character.isalnum() and not character.isspace() for character in password):
+            flash("Your password must include at least one special character.", "error")
         elif password != confirm_password:
             flash("The passwords do not match.", "error")
         else:
@@ -171,7 +165,7 @@ def register():
 
 @auth_bp.route("/check-email", methods=("POST",))
 def check_email():
-    """Check email syntax and domain while someone fills out registration."""
+    """Check an email address while someone fills out the registration form."""
     form_data = request.get_json(silent=True) or {}
     if not isinstance(form_data, dict):
         return jsonify({"valid": False})
@@ -179,15 +173,6 @@ def check_email():
     email = form_data.get("email", "")
     if not isinstance(email, str):
         return jsonify({"valid": False})
-    email = email.lower()
-
-    has_spaces = any(character.isspace() for character in email)
-    if not email or has_spaces or len(email) > 254:
-        return jsonify({"valid": False})
-
-    suggested_email = suggest_email_address(email)
-    if suggested_email:
-        return jsonify({"valid": False, "suggestion": suggested_email})
 
     return jsonify({"valid": is_valid_email(email)})
 
