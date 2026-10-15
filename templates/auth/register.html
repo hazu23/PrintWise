@@ -15,12 +15,10 @@
         <h2>Create your account</h2>
         <p class="auth-subtitle">It only takes a minute.</p>
         <form method="post" class="auth-form">
-            <label for="name">Full name</label>
-            <input id="name" name="name" type="text" autocomplete="name" minlength="2" maxlength="100" required value="{{ request.form.get('name', '') }}">
-            <label for="username">Username</label>
-            <input id="username" name="username" type="text" autocomplete="username" minlength="3" maxlength="30" pattern="[A-Za-z0-9._]{3,30}" title="3 to 30 letters, numbers, dots or underscores" required value="{{ request.form.get('username', '') }}">
+            <label for="name">Your name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required value="{{ request.form.get('name', '') }}">
             <label for="email">Email address</label>
-            <input id="email" name="email" type="email" autocomplete="email" maxlength="255" required value="{{ request.form.get('email', '') }}">
+            <input id="email" name="email" type="email" autocomplete="email" required value="{{ request.form.get('email', '') }}">
             <label for="password">Password</label>
             <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
             <label for="confirm_password">Confirm password</label>

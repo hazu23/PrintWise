@@ -1,17 +1,12 @@
 #Registration, login, logout, and simple role checks
 
-import re
 from functools import wraps
 
-import pymysql
 from flask import flash, redirect, render_template, request, session, url_for           # these are used by the login and registration routes
 from werkzeug.security import check_password_hash, generate_password_hash               
 
 from users import auth_bp
 from users.db import get_db             # provides a connection to the database
-
-# 3 to 30 letters, numbers, dots or underscores
-USERNAME_PATTERN = re.compile(r"^[a-z0-9._]{3,30}$")
 
 
 @auth_bp.route("/register", methods=("GET", "POST"))
@@ -19,17 +14,12 @@ def register():
     """Create a customer account from the registration form."""
     if request.method == "POST":
         name = request.form.get("name", "").strip()
-        username = request.form.get("username", "").strip().lower()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        if not name or not username or not email or not password:
+        if not name or not email or not password:
             flash("Please fill in every field.", "error")
-        elif len(name) < 2 or len(name) > 100:
-            flash("Enter your full name (2 to 100 characters).", "error")
-        elif not USERNAME_PATTERN.match(username):
-            flash("Username must be 3 to 30 letters, numbers, dots or underscores.", "error")
         elif "@" not in email:
             flash("Enter a valid email address.", "error")
         elif len(password) < 8:
@@ -39,52 +29,38 @@ def register():
         else:
             database = get_db()
             with database.cursor() as cursor:
-                cursor.execute(
-                    "SELECT email, username FROM users WHERE email = %s OR username = %s",
-                    (email, username),
-                )
-                existing_users = cursor.fetchall()
+                cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+                existing_user = cursor.fetchone()
 
-            if any(row["email"] == email for row in existing_users):
+            if existing_user:
                 flash("An account with that email already exists.", "error")
-            elif any(row["username"] == username for row in existing_users):
-                flash("That username is already taken. Try another one.", "error")
             else:
-                try:
-                    with database.cursor() as cursor:
-                        cursor.execute(
-                            "INSERT INTO users (name, username, email, password_hash, role) "
-                            "VALUES (%s, %s, %s, %s, 'customer')",
-                            (name, username, email, generate_password_hash(password)),
-                        )
-                    database.commit()
-                except pymysql.err.IntegrityError:
-                    # Someone registered the same email or username a moment ago.
-                    database.rollback()
-                    flash("That email or username was just taken. Try another one.", "error")
-                else:
-                    flash("Your account is ready. You can log in now.", "success")
-                    return redirect(url_for("auth.login"))
+                with database.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO users (name, email, password_hash, role) "
+                        "VALUES (%s, %s, %s, 'customer')",
+                        (name, email, generate_password_hash(password)),
+                    )
+                database.commit()
+                flash("Your account is ready. You can log in now.", "success")
+                return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html")
 
 
 @auth_bp.route("/login", methods=("GET", "POST"))
 def login():
-    """Check the submitted username or email and the password, then start a session."""
+    """Check the submitted email and password, then start a session."""
     if request.method == "POST":
-        identifier = request.form.get("identifier", "").strip().lower()
+        email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
         with get_db().cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM users WHERE email = %s OR username = %s LIMIT 1",
-                (identifier, identifier),
-            )
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
 
         if user is None or not check_password_hash(user["password_hash"], password):
-            flash("Username, email or password is incorrect.", "error")
+            flash("Email or password is incorrect.", "error")
         else:
             session.clear()
             session["user_id"] = user["id"]

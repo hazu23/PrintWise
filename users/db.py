@@ -38,15 +38,10 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
-                username VARCHAR(30) NULL UNIQUE,
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 role VARCHAR(20) NOT NULL DEFAULT 'customer'
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """
         )
-        # A users table made before usernames existed needs the new column added.
-        cursor.execute("SHOW COLUMNS FROM users LIKE 'username'")
-        if cursor.fetchone() is None:
-            cursor.execute("ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL UNIQUE AFTER name")
     database.commit()
