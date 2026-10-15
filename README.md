@@ -21,8 +21,8 @@ You need Python 3.10 or newer.
    ```
 
 4. Start your MySQL server (for example, from the XAMPP Control Panel).
-5. Open `schema.sql` in MySQL Workbench and run it. This creates the `printwise` database and its `users` table.
-6. Copy `.env.example` to `.env`. Update the database username and password if they differ from the XAMPP defaults.
+5. In MySQL Workbench, create the `printwise` database if it does not exist, then run `schema.sql` to create the app's MySQL account and permissions.
+6. Copy `.env.example` to `.env` and set its database username and password to match the MySQL account you are using.
 7. Start the website:
 
    ```powershell
@@ -31,7 +31,7 @@ You need Python 3.10 or newer.
 
 8. Open <http://127.0.0.1:5000> and choose **Create account**.
 
-The app also checks for the `users` table when it starts and creates it if needed. MySQL stores the account data in the `printwise` database, which you can view in Workbench.
+The app checks for the `users` table when it starts and creates it if needed. If the table is from an older version, the app adds a username column and gives existing accounts a temporary username such as `user12`. This update needs `ALTER` and `UPDATE` permission, which `schema.sql` grants to the app account. Run the updated `schema.sql` again if you already created that account before adding usernames. MySQL stores account data in the `printwise` database, which you can view in Workbench.
 
 ## Beginner project map
 
@@ -57,6 +57,7 @@ static/
 ## What account registration does
 
 - New registrations receive the `customer` role. People cannot choose admin or staff access from the public form.
+- Each account has a unique username, but people still log in with their email address.
 - Passwords are saved as password hashes, not as readable text.
 - Login details are kept in Flask's session cookie.
 - Customer, staff, and admin page routes check the role before showing a page.

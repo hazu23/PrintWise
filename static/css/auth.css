@@ -11,6 +11,7 @@ body { background: var(--soft-gray); color: var(--ink-navy); }
 .auth-subtitle { margin: 0 0 22px; color: var(--slate); font-size: 11px; }
 .auth-form { display: grid; gap: 8px; }
 .auth-form label { margin-top: 5px; color: #40546a; font-size: 10px; font-weight: 650; }
+.auth-help { margin: -4px 0 3px; color: var(--slate); font-size: 10px; line-height: 1.5; }
 .auth-form input { width: 100%; height: 40px; padding: 0 11px; border: 1px solid #dfe6ed; border-radius: 6px; outline: none; color: var(--ink-navy); font-size: 12px; }
 .auth-form input:focus { border-color: var(--print-blue); box-shadow: 0 0 0 3px #356ae61c; }
 .auth-submit { display: flex; justify-content: space-between; align-items: center; height: 41px; margin-top: 10px; padding: 0 13px; border: 0; border-radius: 6px; background: var(--print-blue); color: white; font-size: 11px; font-weight: 700; }

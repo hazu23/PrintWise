@@ -15,17 +15,27 @@
         <h2>Create your account</h2>
         <p class="auth-subtitle">It only takes a minute.</p>
         <form method="post" class="auth-form">
-            <label for="name">Your name</label>
-            <input id="name" name="name" type="text" autocomplete="name" required value="{{ request.form.get('name', '') }}">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" autocomplete="name" maxlength="50" aria-describedby="name-help" required value="{{ request.form.get('name', '') }}">
+            <small id="name-help" class="auth-help" aria-live="polite" role="status"></small>
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}" aria-describedby="username-help" required value="{{ request.form.get('username', '') }}">
+            <small id="username-help" class="auth-help" aria-live="polite" role="status"></small>
             <label for="email">Email address</label>
-            <input id="email" name="email" type="email" autocomplete="email" required value="{{ request.form.get('email', '') }}">
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" data-check-url="{{ url_for('auth.check_email') }}" aria-describedby="email-help" required value="{{ request.form.get('email', '') }}">
+            <small id="email-help" class="auth-help" aria-live="polite" role="status"></small>
+            <input id="email-custom-confirmed" name="email_custom_confirmed" type="hidden" value="">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" aria-describedby="password-help" required>
+            <small id="password-help" class="auth-help" aria-live="polite" role="status"></small>
             <label for="confirm_password">Confirm password</label>
-            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" aria-describedby="confirm-password-help" required>
+            <small id="confirm-password-help" class="auth-help" aria-live="polite" role="status"></small>
             <button class="auth-submit" type="submit">Create account <span>→</span></button>
         </form>
         <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
     </div>
 </section>
 {% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/register.js') }}"></script>{% endblock %}

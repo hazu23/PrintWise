@@ -7,6 +7,7 @@ This checklist tracks the project from the current beginner-friendly Flask proto
 - [x] Set up a Flask application with separate customer, staff, admin, and authentication page groups.
 - [x] Connect the application to MySQL through PyMySQL and environment-based settings.
 - [x] Create customer registration and login pages.
+- [x] Add a unique username field to customer registration.
 - [x] Hash passwords before saving them to the database.
 - [x] Add logout and basic role checks for customer, staff, and admin routes.
 - [x] Build the initial login and registration page styling.
