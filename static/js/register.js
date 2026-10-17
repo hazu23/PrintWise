@@ -281,7 +281,7 @@ if (emailInput && emailFeedback) {
             return;
         }
 
-        emailFeedback.textContent = "Checking whether this email domain can receive mail…";
+        emailFeedback.textContent = "";
         emailInput.setAttribute("aria-invalid", "false");
 
         emailCheckTimer = setTimeout(async () => {
