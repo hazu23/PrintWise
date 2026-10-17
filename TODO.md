@@ -16,8 +16,10 @@
 
 ## Make customer orders work
 
-- [ ] Add database tables for printshops, print services, and orders
-- [ ] Show printshops and their available services from MySQL instead of placeholder content
+- [x] Add a database table for printshops and sample listings
+- [x] Show active printshops from MySQL on the customer printshop page
+- [ ] Add database tables for print services and orders
+- [ ] Show each printshop's available services from MySQL
 - [ ] Let a customer select a printshop and service, enter job details, and submit an order request
 - [ ] Save order requests and show their status on the customer dashboard and order history
 - [ ] Let staff view incoming orders and update their status
@@ -37,6 +39,6 @@
 - [ ] Show uploaded files and order details to the right customer and printshop staff only.
 
 ## Visuals
-.
+
 - [ ] Add a dark mode later, as planned
 - [ ] Add the logo
