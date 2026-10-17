@@ -48,18 +48,18 @@ def create_users_table(cursor):
     )
 
 
-def make_username_optional(cursor):
-    """Keep the old username column optional while registration is disabled."""
-    # Keep the username column optional while username registration is disabled.
-    cursor.execute("SHOW COLUMNS FROM users LIKE 'username'")
-    username_column = cursor.fetchone()
+# def make_username_optional(cursor):
+#     """Keep the old username column optional while registration is disabled."""
+#     # Keep the username column optional while username registration is disabled.
+#     cursor.execute("SHOW COLUMNS FROM users LIKE 'username'")
+#     username_column = cursor.fetchone()
 
-    if username_column is None:
-        cursor.execute(
-            "ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL UNIQUE AFTER name"
-        )
-    elif username_column["Null"] == "NO":
-        cursor.execute("ALTER TABLE users MODIFY username VARCHAR(30) NULL")
+#     if username_column is None:
+#         cursor.execute(
+#             "ALTER TABLE users ADD COLUMN username VARCHAR(30) NULL UNIQUE AFTER name"
+#         )
+#     elif username_column["Null"] == "NO":
+#         cursor.execute("ALTER TABLE users MODIFY username VARCHAR(30) NULL")
 
 
 def create_printshops_table(cursor):
@@ -79,33 +79,33 @@ def create_printshops_table(cursor):
     )
 
 
-def add_sample_printshops(cursor):
-    """Add demo printshops the first time the table is empty."""
-    # Add sample listings the first time the printshop table is created.
-    cursor.execute("SELECT COUNT(*) AS shop_count FROM printshops")
-    shop_count = cursor.fetchone()["shop_count"]
+# def add_sample_printshops(cursor):
+#     """Add demo printshops the first time the table is empty."""
+#     # Add sample listings the first time the printshop table is created.
+#     cursor.execute("SELECT COUNT(*) AS shop_count FROM printshops")
+#     shop_count = cursor.fetchone()["shop_count"]
 
-    if shop_count == 0:
-        cursor.executemany(
-            "INSERT INTO printshops (name, description, location) VALUES (%s, %s, %s)",
-            [
-                (
-                    "Demo Printshop One",
-                    "Sample listing. Replace this with details for a real printshop.",
-                    "Example location",
-                ),
-                (
-                    "Demo Printshop Two",
-                    "Sample listing. Add the shop's printing services and specialties here later.",
-                    "Example location",
-                ),
-                (
-                    "Demo Printshop Three",
-                    "Sample listing. This shop is here to help preview the directory page.",
-                    "Example location",
-                ),
-            ],
-        )
+#     if shop_count == 0:
+#         cursor.executemany(
+#             "INSERT INTO printshops (name, description, location) VALUES (%s, %s, %s)",
+#             [
+#                 (
+#                     "Demo Printshop One",
+#                     "Sample listing. Replace this with details for a real printshop.",
+#                     "Example location",
+#                 ),
+#                 (
+#                     "Demo Printshop Two",
+#                     "Sample listing. Add the shop's printing services and specialties here later.",
+#                     "Example location",
+#                 ),
+#                 (
+#                     "Demo Printshop Three",
+#                     "Sample listing. This shop is here to help preview the directory page.",
+#                     "Example location",
+#                 ),
+#             ],
+#         )
 
 
 def init_db():
@@ -115,8 +115,8 @@ def init_db():
     # Each helper handles one database setup task.
     with database.cursor() as cursor:
         create_users_table(cursor)
-        make_username_optional(cursor)
+        # make_username_optional(cursor)
         create_printshops_table(cursor)
-        add_sample_printshops(cursor)
+        # add_sample_printshops(cursor)
 
     database.commit()

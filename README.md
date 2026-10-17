@@ -21,17 +21,16 @@ You need Python 3.10 or newer.
    ```
 
 4. Start your MySQL server (for example, from the XAMPP Control Panel).
-5. In MySQL Workbench, create the `printwise` database if it does not exist, then run `schema.sql` to create the app's MySQL account and permissions.
-6. Copy `.env.example` to `.env` and set its database username and password to match the MySQL account you are using.
-7. Start the website:
+5. In MySQL Workbench, create the `printwise` database if it does not exist. For a typical local XAMPP setup, the app connects as `root` with a blank password. If your MySQL account uses different credentials, set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` as operating-system environment variables before starting the app.
+6. Start the website:
 
    ```powershell
    python run.py
    ```
 
-8. Open <http://127.0.0.1:5000> and choose **Create account**.
+7. Open <http://127.0.0.1:5000> and choose **Create account**.
 
-The app checks for the `users` table when it starts and creates it if needed. Username registration is temporarily disabled. The app keeps the username database column optional so existing accounts and data continue to work. MySQL stores account data in the `printwise` database, which you can view in Workbench.
+The app checks for the `users` and `printshops` tables when it starts and creates them if needed. Username registration is temporarily disabled. The app keeps the username database column optional so existing accounts and data continue to work. MySQL stores account data in the `printwise` database, which you can view in Workbench.
 
 ## Beginner project map
 
@@ -63,7 +62,7 @@ static/
 - Customer, staff, and admin page routes check the role before showing a page.
 - Admin and staff account creation is not built yet. Those roles will need a controlled setup step in a later feature.
 
-The database connection uses PyMySQL. The `.env` file holds local connection settings and is ignored by Git. Do not commit your real database password or secret key.
+The database connection uses PyMySQL. Local defaults are defined in `config.py`; environment variables can override them without a `.env` file. For deployment, configure database credentials and a private `SECRET_KEY` in the hosting provider's environment settings. Do not put real passwords or secrets in source control.
 
 ## Main URLs
 
