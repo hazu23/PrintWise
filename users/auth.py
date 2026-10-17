@@ -1,9 +1,9 @@
 #Registration, login, logout, and simple role checks
 
-import re
+# import re  # Temporarily unused; this was used to validate usernames.
 from functools import wraps
 
-from flask import current_app, flash, jsonify, redirect, render_template, request, session, url_for  # these are used by the login and registration routes
+from flask import flash, jsonify, redirect, render_template, request, session, url_for  # these are used by the login and registration routes
 from werkzeug.security import check_password_hash, generate_password_hash
 from email_validator import EmailNotValidError, validate_email
 
@@ -96,66 +96,92 @@ def is_valid_email(email):
     return domain in EMAIL_PROVIDER_DOMAINS
 
 
+def get_registration_error(name, email, password, confirm_password):
+    """Return an error message when a registration field is invalid."""
+    if not name or not email or not password:
+        return "Please fill in every field."
+
+    if not is_valid_full_name(name):
+        return (
+            "Enter a full name with at least two words and six letters. "
+            "Use letters and single spaces; a middle initial may end with a period, "
+            "and suffixes like Jr., Sr., or III are allowed."
+        )
+
+    # Username validation is temporarily disabled with the registration field.
+    # if not re.fullmatch(r"[a-z0-9_.]{3,20}", username):
+    #     return "Enter a valid username."
+
+    if any(character.isspace() for character in email):
+        return "Spaces are not allowed in an email address."
+    if len(email) > 100:
+        return "Email addresses can't be longer than 100 characters."
+    if not is_valid_email(email):
+        return "Enter a valid email address."
+
+    if any(character.isspace() for character in password) or any(
+        character.isspace() for character in confirm_password
+    ):
+        return "Spaces aren't allowed in passwords."
+    if len(password) < 8:
+        return "Your password must be at least 8 characters long."
+    if not any(character.isalpha() for character in password):
+        return "Your password must include at least one letter."
+    if not any("0" <= character <= "9" for character in password):
+        return "Your password must include at least one number."
+    if not any(not character.isalnum() and not character.isspace() for character in password):
+        return "Your password must include at least one special character."
+    if password != confirm_password:
+        return "The passwords do not match."
+
+    return None
+
+
+def start_user_session(user):
+    """Remember the logged-in user's ID, name, and role for later requests."""
+    # Clear any old login data before starting this user's session.
+    session.clear()
+    # Store only the information the app needs to recognize this user.
+    session["user_id"] = user["id"]
+    session["user_name"] = user["name"]
+    session["user_role"] = user["role"]
+
+
 @auth_bp.route("/register", methods=("GET", "POST"))
 def register():
     """Create a customer account from the registration form."""
     if request.method == "POST":
         name = request.form.get("name", "")
-        username = request.form.get("username", "").lower()
+        # username = request.form.get("username", "").lower()  # Temporarily disabled.
         email = request.form.get("email", "").lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        if not name or not username or not email or not password:
-            flash("Please fill in every field.", "error")
-        elif not is_valid_full_name(name):
-            flash(
-                "Enter a full name with at least two words and six letters. Use letters and single spaces; a middle initial may end with a period, and suffixes like Jr., Sr., or III are allowed.",
-                "error",
-            )
-        elif not re.fullmatch(r"[a-z0-9_.]{3,20}", username):
-            flash(
-                "Username must be 3–20 characters. Use letters, numbers, underscores (_), or periods (.); spaces aren't allowed.",
-                "error",
-            )
-        elif any(character.isspace() for character in email):
-            flash("Spaces are not allowed in an email address.", "error")
-        elif len(email) > 100:
-            flash("Email addresses can't be longer than 100 characters.", "error")
-        elif not is_valid_email(email):
-            flash("Enter a valid email address.", "error")
-        elif any(character.isspace() for character in password) or any(
-            character.isspace() for character in confirm_password
-        ):
-            flash("Spaces aren't allowed in passwords.", "error")
-        elif len(password) < 8:
-            flash("Your password must be at least 8 characters long.", "error")
-        elif not any(character.isalpha() for character in password):
-            flash("Your password must include at least one letter.", "error")
-        elif not any("0" <= character <= "9" for character in password):
-            flash("Your password must include at least one number.", "error")
-        elif not any(not character.isalnum() and not character.isspace() for character in password):
-            flash("Your password must include at least one special character.", "error")
-        elif password != confirm_password:
-            flash("The passwords do not match.", "error")
+        error_message = get_registration_error(name, email, password, confirm_password)
+        if error_message:
+            flash(error_message, "error")
         else:
             database = get_db()
             with database.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id FROM users WHERE email = %s OR username = %s",
-                    (email, username),
+                    "SELECT id FROM users WHERE email = %s",
+                    (email,),
                 )
+                # Username checks are disabled; the previous query also checked username:
+                # cursor.execute("SELECT id FROM users WHERE email = %s OR username = %s", (email, username))
                 existing_user = cursor.fetchone()
 
             if existing_user:
-                flash("That email address or username is already in use.", "error")
+                flash("That email address is already in use.", "error")
             else:
                 with database.cursor() as cursor:
                     cursor.execute(
-                        "INSERT INTO users (name, username, email, password_hash, role) "
-                        "VALUES (%s, %s, %s, %s, 'customer')",
-                        (name, username, email, generate_password_hash(password)),
+                        "INSERT INTO users (name, email, password_hash, role) "
+                        "VALUES (%s, %s, %s, 'customer')",
+                        (name, email, generate_password_hash(password)),
                     )
+                    # The previous insert also saved username, which is disabled for now.
+                    # cursor.execute("INSERT INTO users (name, username, email, password_hash, role) VALUES (%s, %s, %s, %s, 'customer')", (name, username, email, generate_password_hash(password)))
                 database.commit()
                 flash("Your account is ready. You can log in now.", "success")
                 return redirect(url_for("auth.login"))
@@ -191,10 +217,7 @@ def login():
         if user is None or not check_password_hash(user["password_hash"], password):
             flash("Email or password is incorrect.", "error")
         else:
-            session.clear()
-            session["user_id"] = user["id"]
-            session["user_name"] = user["name"]
-            session["user_role"] = user["role"]
+            start_user_session(user)
             flash("Welcome back!", "success")
 
             if user["role"] == "admin":
@@ -209,6 +232,7 @@ def login():
 @auth_bp.route("/logout", methods=("POST",))
 def logout():
     """End the current login session."""
+    # Removing these values logs the user out.
     session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for("auth.login"))

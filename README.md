@@ -31,7 +31,7 @@ You need Python 3.10 or newer.
 
 8. Open <http://127.0.0.1:5000> and choose **Create account**.
 
-The app checks for the `users` table when it starts and creates it if needed. If the table is from an older version, the app adds a username column and gives existing accounts a temporary username such as `user12`. This update needs `ALTER` and `UPDATE` permission, which `schema.sql` grants to the app account. Run the updated `schema.sql` again if you already created that account before adding usernames. MySQL stores account data in the `printwise` database, which you can view in Workbench.
+The app checks for the `users` table when it starts and creates it if needed. Username registration is temporarily disabled. The app keeps the username database column optional so existing accounts and data continue to work. MySQL stores account data in the `printwise` database, which you can view in Workbench.
 
 ## Beginner project map
 
@@ -57,7 +57,7 @@ static/
 ## What account registration does
 
 - New registrations receive the `customer` role. People cannot choose admin or staff access from the public form.
-- Each account has a unique username, but people still log in with their email address.
+- Username registration is temporarily disabled. People register and log in with their email address.
 - Passwords are saved as password hashes, not as readable text.
 - Login details are kept in Flask's session cookie.
 - Customer, staff, and admin page routes check the role before showing a page.

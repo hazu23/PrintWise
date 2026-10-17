@@ -1,8 +1,8 @@
 const fullNameInput = document.getElementById("name");
 const registrationForm = fullNameInput?.form;
 const fullNameFeedback = document.getElementById("name-help");
-const usernameInput = document.getElementById("username");
-const usernameFeedback = document.getElementById("username-help");
+// const usernameInput = document.getElementById("username"); // Temporarily disabled.
+// const usernameFeedback = document.getElementById("username-help");
 const emailInput = document.getElementById("email");
 const emailFeedback = document.getElementById("email-help");
 const passwordInput = document.getElementById("password");
@@ -228,6 +228,7 @@ if (fullNameInput && registrationForm && fullNameFeedback) {
     });
 }
 
+/* Username validation is temporarily disabled with the registration field.
 if (usernameInput && usernameFeedback) {
     blockSpaces(usernameInput, usernameFeedback, "Spaces aren't allowed in a username.");
 
@@ -253,6 +254,7 @@ if (usernameInput && usernameFeedback) {
     usernameInput.addEventListener("input", showUsernameError);
     usernameInput.addEventListener("blur", showUsernameError);
 }
+*/
 
 if (emailInput && emailFeedback) {
     blockSpaces(emailInput, emailFeedback, "Spaces aren't allowed in an email address.");
